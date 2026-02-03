@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from datetime import datetime
 from pydantic import BaseModel
 from fastapi.responses import Response
+from fastapi import HTTPException
 import csv
 import io
 
@@ -36,7 +37,7 @@ class AddItem(BaseModel):
 @app.post("/sessions/{session_id}/items")
 def add_item(session_id: int, payload: AddItem):
     if session_id not in sessions:
-        return {"error": "Session not found"}
+        raise HTTPException(status_code=404, detail="Session not found")
 
     sessions[session_id]["items"][payload.barcode] = payload.quantity
     return {"ok": True}
@@ -44,7 +45,7 @@ def add_item(session_id: int, payload: AddItem):
 @app.get("/sessions/{session_id}")
 def get_session(session_id: int):
     if session_id not in sessions:
-        return {"error": "Session not found"}
+        raise HTTPException(status_code=404, detail="Session not found")
 
     return {
         "session_id": session_id,
@@ -55,7 +56,7 @@ def get_session(session_id: int):
 @app.get("/sessions/{session_id}/export")
 def export_session(session_id: int):
     if session_id not in sessions:
-        return {"error": "Session not found"}
+        raise HTTPException(status_code=404, detail="Session not found")
 
     output = io.StringIO()
     writer = csv.writer(output)
